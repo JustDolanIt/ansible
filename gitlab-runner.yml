@@ -1,0 +1,12 @@
+- hosts: all
+  become: true
+  gather_facts: true
+  run_once: true
+  pre_tasks:
+    - name: Load encrypted vars
+      community.sops.load_vars:
+        file: sops/sops.yml
+        expressions: ignore
+  roles:
+    - { role: riemers.gitlab-runner }
+    - sops

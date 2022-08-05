@@ -1,0 +1,3 @@
+# gpg_key: "" # GPG key to be added to host for decryption
+sops_version: 3.5.0
+sops_url_get: "https://github.com/mozilla/sops/releases/download/v{{ sops_version }}/sops-v{{ sops_version }}.linux"

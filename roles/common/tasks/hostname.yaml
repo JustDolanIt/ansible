@@ -1,0 +1,9 @@
+- name: Configure hostname | common-hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Add /etc/hosts record | common-hostname
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ inventory_hostname }}$'
+    line: '127.0.0.1 {{ inventory_hostname }}'

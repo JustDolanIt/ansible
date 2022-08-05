@@ -1,0 +1,110 @@
+- name: Initiate swarm cluster
+  docker_swarm:
+    state: present
+    advertise_addr: "{{ private_addr }}:2377"
+  run_once: True
+  register: swarm_info
+
+- name: Add all other nodes as manager nodes
+  docker_swarm:
+    state: join
+    advertise_addr: private_addr
+    join_token: swarm_info.swarm_facts.JoinTokens.Manager
+    remote_addrs: [ "{{ hostvars[groups['all'][0].inventory_hostname].private_addr }}:2377" ]
+  when: "inventory_hostname != groups['all'][0]"
+
+- name: Create .docker directory for root
+  file:
+    path: /root/.docker
+    owner: root
+    group: root
+    state: directory
+
+- name: Put GitLab Registry Docker config to root user
+  no_log: true
+  copy:
+    content: "{{ docker_swarm_config }}"
+    dest: /root/.docker/config.json
+    owner: gitlab-runner
+    group: gitlab-runner
+    mode: '0600'
+
+- name: Create .docker directory for gitlab-runner
+  file:
+    path: /home/gitlab-runner/.docker/
+    owner: gitlab-runner
+    group: gitlab-runner
+    state: directory
+
+- name: Put GitLab Registry Docker config to gitlab-runner user
+  no_log: true
+  copy:
+    content: "{{ docker_swarm_config }}"
+    dest: /home/gitlab-runner/.docker/config.json
+    owner: gitlab-runner
+    group: gitlab-runner
+    mode: '0600'
+
+- name: Create bridge in swarm scope to be able to connect to containers from host
+  docker_network:
+    name: bridged
+    driver: bridge
+    scope: swarm
+
+- name: Create directory for nginx proxy
+  file:
+    path: /opt/nginx-proxy
+    owner: root
+    group: root
+    state: directory
+
+- name: Copy nginx config
+  copy:
+    src: nginx.conf
+    dest: /opt/nginx-proxy/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Generate self-signed certificate for nginx-proxy for dummy SSL termination
+  command: openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout key.pem -out cert.pem -subj '/CN=*/'
+  args:
+    chdir: /opt/nginx-proxy/
+    creates: /opt/nginx-proxy/cert.pem
+
+- name: Create nginx proxy to workaround docker swarm logic
+  docker_container:
+    name: nginx-proxy
+    image: nginx:stable-alpine
+    network_mode: host
+    restart_policy: always
+    volumes:
+      - /opt/nginx-proxy/nginx.conf:/etc/nginx/nginx.conf
+      - /opt/nginx-proxy/cert.pem:/etc/nginx/cert.pem
+      - /opt/nginx-proxy/key.pem:/etc/nginx/key.pem
+
+- name: Install jsondiff via PIP
+  pip:
+    name: "jsondiff"
+    state: present
+
+- name: Render fluentd template
+  template:
+    src: "fluetd.yml"
+    dest: /opt/fluetd.yml
+
+- name: Apply fluentd into swarm
+  docker_stack:
+    name: fluentd
+    compose: /opt/fluetd.yml
+    with_registry_auth: true
+
+- name: Render ingress template
+  template:
+    src: "ingress.yml"
+    dest: /opt/ingress.yml
+
+- name: Apply ingress into swarm
+  docker_stack:
+    name: ingress
+    compose: /opt/ingress.yml

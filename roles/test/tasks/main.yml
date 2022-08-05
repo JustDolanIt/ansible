@@ -1,0 +1,17 @@
+- name: Fetch file from URL
+  ansible.builtin.uri:
+    url: https://raw.githubusercontent.com/mozilla/sops/master/functional-tests/res/comments.enc.yaml
+    return_content: yes
+  register: encrypted_content
+
+- name: Show encrypted data
+  debug:
+    msg: "{{ encrypted_content.content | ansible.builtin.from_yaml }}"
+
+- name: Decrypt data and decode decrypted YAML
+  set_fact:
+    decrypted_data: "{{ encrypted_content.content | community.sops.decrypt | ansible.builtin.from_yaml }}"
+
+- name: Show decrypted data
+  debug:
+    msg: "{{ decrypted_data }}"

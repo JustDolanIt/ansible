@@ -1,0 +1,63 @@
+# Проверка необходимых условий для работы
+- name: "Docker | Check conditions | Service manager"
+  assert:
+    that:
+      - ansible_service_mgr == 'systemd'
+    msg: "Systemd only!"
+
+- name: "Docker | Check conditions | Distribution"
+  assert:
+    that:
+      - ansible_distribution in ['Debian', 'Ubuntu']
+    msg: "Debian and Ubuntu only!"
+
+# Добавляем ключик репозитория
+- name: "Docker | Add repository official GPG key"
+  apt_key:
+    url: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+    state: present
+
+# Добавляем официальный репозиторий
+- name: "Docker | Add repository"
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+    state: present
+
+# Установка последней стабильной версии docker
+- name: "Docker | Install docker-ce (latest version)"
+  apt:
+    name: ['docker-ce']
+    state: present
+    update_cache: yes
+
+- name: "Docker | Make daemon.json"
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+  notify: restart docker
+
+# Устанавливаем docker-compose из PIP
+- name: "Docker | Install docker-compose over PIP (latest version)"
+  pip:
+    name: "docker-compose"
+    version: 1.25.1
+    state: present
+
+# Crons
+- name: Copy docker cleanup script | docker
+  copy:
+    src: docker_cleanup.sh
+    dest: /opt/docker_cleanup.sh
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Setup cron to cleanup unused images | docker
+  cron:
+    name: Cleanup unused Docker images
+    user: root
+    cron_file: docker_images_cleanup
+    hour: 3
+    minute: 0
+    job: /opt/docker_cleanup.sh
+

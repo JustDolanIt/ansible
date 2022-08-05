@@ -1,0 +1,14 @@
+global_users:
+  - login: "dolan"
+    description: "Dmitry Dunaev"
+    shell: "bash"
+    state: present
+    ssh_keys:
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5Sx/9VEFaihrZWtRGc650vJ8vRy1BLDdFwHEYOs2Hnp7b8dY/WYdPjfnHwte9Vo0LZrn0j4ikzbF/WN5b/lpqgPbRcG/sjOHZLND54o6KvDdyKCMMN6kc9ZWvSZ3WM5SUcjMH/ZFbwdbdXx1Kn8h1s4dnkKC6Dc81FPUjtXVRurPraQf3hE7Iy4c/JGBmq/6+71gw9uZZ5qSIakIhOB52C/apV3TyqW/ScIoZAMNgCpbuZwlbE8isd9MtXWv5SuQ3VYNeZbleBK1z7pdWPslVGhms5kLBOFRTr2cTiFP4UDE5MVC3m3f3afBaDOAoDE191nkjiOBndoV+c1p5qHI5"
+    groups:
+      - wheel
+      - sudo
+      - docker
+      - libvirtd
+    ansible_groups:
+      - all

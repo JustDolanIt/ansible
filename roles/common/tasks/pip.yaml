@@ -1,0 +1,95 @@
+# PIP installation if global pip_enabled set to 'true'
+- set_fact:
+    pip2_absent: true
+    pip3_absent: true
+    python2: false
+    python3: false
+
+- block:
+  - name: Finding PIP2 | common-pip
+    stat:
+      path: "{{ item }}"
+    loop:
+      - "/usr/local/bin/pip2"
+      - "/usr/bin/pip2"
+      - "/bin/pip2"
+    register: pip2_stat
+
+  - name: Check PIP2 installed | common-pip
+    set_fact:
+      pip2_absent: false
+    loop: "{{ pip2_stat.results }}"
+    when: item.stat.exists
+
+  - name: Finding PIP3 | common-pip
+    stat:
+      path: "{{ item }}"
+    loop:
+      - "/usr/local/bin/pip3"
+      - "/usr/bin/pip3"
+      - "/bin/pip3"
+    register: pip3_stat
+
+  - name: Check PIP3 installed | common-pip
+    set_fact:
+      pip3_absent: false
+    loop: "{{ pip3_stat.results }}"
+    when: item.stat.exists
+
+  - name: Finding python2 | common-pip
+    stat:
+      path: "{{ item }}"
+    loop:
+      - "/usr/bin/python2"
+      - "/usr/local/bin/python2"
+      - "/usr/bin/python2.7"
+      - "/usr/local/bin/python2.7"
+    register: python2_stat
+
+  - name: Select python2 | common-pip
+    set_fact:
+      python2_bin: "{{ item.item }}"
+      python2: true
+    loop: "{{ python2_stat.results }}"
+    when: item.stat.exists
+
+  - name: Finding python3 | common-pip
+    stat:
+      path: "{{ item }}"
+    loop:
+      - "/usr/bin/python3"
+      - "/usr/local/bin/python3"
+      - "/usr/bin/python3.5"
+      - "/usr/local/bin/python3.5"
+    register: python3_stat
+
+  - name: Select python3 | common-pip
+    set_fact:
+      python3_bin: "{{ item.item }}"
+      python3: true
+    loop: "{{ python3_stat.results }}"
+    when: item.stat.exists
+
+  - name: Install PIP | common-pip
+    block:
+      - name: "Download PIP installer"
+        get_url:
+          url: "https://bootstrap.pypa.io/get-pip.py"
+          dest: /tmp/get-pip.py
+        changed_when: false
+
+      - name: Install PIP2 | common-pip
+        command: "{{ python2_bin }} /tmp/get-pip.py"
+        when: pip2_absent and python2
+
+      - name: Install PIP3 | common-pip
+        command: "{{ python3_bin }} /tmp/get-pip.py"
+        when: pip3_absent and python3
+
+      - name: Clean up | common-pip
+        file:
+          path: "/tmp/get-pip.py"
+          state: absent
+        changed_when: false
+    when: pip2_absent or pip3_absent
+  when: pip_enabled

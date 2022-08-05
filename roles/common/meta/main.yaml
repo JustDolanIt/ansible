@@ -1,0 +1,20 @@
+galaxy_info:
+  author: "Dmitry Dunaev <dd@fevlake.com>"
+  description: "An [Ansible](https://www.ansible.com) role to define a base configuration state created for [Fevlake](https://fevlake.com) needs"
+  license: MIT
+  min_ansible_version: 2.6
+  dependencies: []
+  platforms:
+    - name: Ubuntu
+      versions:
+        - trusty
+        - xenial
+        - bionic
+    - name: Debian
+      versions:
+        - stretch
+  galaxy_tags:
+    - ubuntu
+    - debian
+    - system
+    - base

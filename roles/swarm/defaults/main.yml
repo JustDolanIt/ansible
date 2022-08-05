@@ -1,0 +1,5 @@
+# Fluentd related
+fluentd_image: registry.gitlab.com/advanced-loyalty-bots/infrastructure/fluentd:latest
+# Ingress related
+consul_fqdn: consul.84.201.147.142.nip.io
+traefik_fqdn: traefik.84.201.147.142.nip.io

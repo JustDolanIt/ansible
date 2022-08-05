@@ -1,0 +1,29 @@
+- name: Add gitlab-runner user to docker group | sops
+  user:
+    name: gitlab-runner
+    groups: docker
+    append: yes
+
+- name: Get SOPS | sops
+  get_url:
+    url: "{{ sops_url_get }}"
+    mode: '0775'
+    owner: root
+    group: root
+    dest: '/usr/local/bin/sops'
+
+- name: Import GPG key | sops
+  block:
+    - name: Save GPG key for import | sops
+      diff: false
+      copy:
+        content: "{{ gpg_key }}"
+        dest: '/opt/ansible_creates/sops_key.gpg'
+        owner: 'gitlab-runner'
+        mode: 0400
+      register: gpg_save
+
+    - name: Import GPG key to gitlab-runner user | sops
+      become_user: gitlab-runner
+      command: 'gpg --import /opt/ansible_creates/sops_key.gpg'
+      when: gpg_save.changed

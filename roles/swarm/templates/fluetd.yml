@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  fluentd:
+    image: {{ fluentd_image }}
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    environment:
+      - LOGZ_ENDPOINT_URL={{ logz_endpoint_url }}
+    deploy:
+      mode: global
+    logging:
+      driver: "json-file"

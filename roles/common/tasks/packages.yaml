@@ -1,0 +1,48 @@
+# Package manager
+- name: Install packages | apt
+  become: true
+  environment:
+    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'
+  apt:
+    name: "{{ shared_packages }}"
+  when: ansible_pkg_mgr == "apt"
+
+- name: Install extra packages | apt
+  become: true
+  environment:
+    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'
+  apt:
+    name: "{{ extra_packages }}"
+  when: ansible_pkg_mgr == "apt"
+
+- name: Install packages | yum
+  become: true
+  environment:
+    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'
+  yum:
+    name: "{{ shared_packages }}"
+  when: ansible_pkg_mgr == "yum"
+
+- name: Install extra packages | yum
+  become: true
+  environment:
+    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'
+  yum:
+    name: "{{ extra_packages }}"
+  when: ansible_pkg_mgr == "yum"
+
+- name: Install packages | pkgng
+  become: true
+  environment:
+    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'
+  pkgng:
+    name: "{{ shared_packages }}"
+  when: ansible_pkg_mgr == "pkgng"
+
+- name: Install extra packages | pkgng
+  become: true
+  environment:
+    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'
+  pkgng:
+    name: "{{ extra_packages }}"
+  when: ansible_pkg_mgr == "pkgng"

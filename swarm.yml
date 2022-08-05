@@ -1,0 +1,10 @@
+- hosts: all
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - name: Load encrypted vars
+      community.sops.load_vars:
+        file: sops/swarm.yml
+        expressions: ignore
+  roles:
+    - swarm
